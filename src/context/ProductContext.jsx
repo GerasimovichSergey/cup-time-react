@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { API_URL } from '../const.js';
 
 
-const ProductContext = createContext();
+const ProductContext = createContext(null);
 
 export const ProductProvider = ({ children }) => {
     const [products, setProducts] = useState([]);
@@ -28,5 +28,6 @@ export const ProductProvider = ({ children }) => {
         </ProductContext.Provider>
     )
 };
+
 
 export const useProducts = () => useContext(ProductContext);
