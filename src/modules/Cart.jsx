@@ -1,14 +1,58 @@
 import { CartItem } from './CartItem.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { SkeletonLoader } from './SkeletonLoader.jsx';
+import { useState } from 'react';
+import { useOrder } from '../context/OrderContext.jsx';
+import { API_URL } from '../const.js';
+import Modal from 'react-modal';
 
+Modal.setAppElement('#root');
 
 export const Cart = () => {
-    const { cart } = useCart();
+    const [orderStatus, setOrderStatus] = useState(null);
+    const [orderId, setOrderId] = useState(null);
+    const [modalIsOpen, setModalIsOpen] = useState(false);
 
-    const totalPrice = cart ? cart.reduce((acc, item) => {
-        return acc + item.price * item.quantity;
-    }, 0) : 0;
+    const { cart, clearCart } = useCart();
+    const { orderDetails, resetOrderDetails } = useOrder();
+
+    const handleSubmit = async () => {
+        const orderData = {
+            ...orderDetails,
+            items: cart.map((item) => ({ id: item.id, quantity: item.quantity })),
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/api/orders`, {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+                },
+                body: JSON.stringify(orderData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Произошла ошибка отправки!');
+            }
+
+            const result = await response.json();
+            setOrderStatus('success');
+            setOrderId(result.order.id);
+            clearCart();
+            resetOrderDetails();
+        } catch (error) {
+            setOrderStatus('error');
+            console.error(`Ошибка: ${error}`);
+        } finally {
+            setModalIsOpen(true);
+        }
+    };
+
+    const closeModal = () => {
+        setModalIsOpen(false);
+    };
+
+    const totalPrice = cart ? cart.reduce((acc, item) => (acc + item.price * item.quantity), 0) : 0;
 
     return (
         <section className="cart">
@@ -22,9 +66,18 @@ export const Cart = () => {
                 <div className="cart__summary">
                     <h3 className="cart__summary-title">Итого:</h3>
                     <p className="cart__total">{totalPrice}&nbsp;₽</p>
-                    <button className="cart__order-button">Заказать</button>
+                    <button className="cart__order-button" onClick={handleSubmit}>Заказать</button>
                 </div>
             </div>
+
+            <Modal className="modal-cart" overlayClassName="modal-cart__overlay" onRequestClose={closeModal}
+                   isOpen={modalIsOpen}>
+                <h2 className="modal-cart__title">
+                    {orderStatus === 'success' ? `Заказ успешно отправлен! Номер вашего заказа: ${orderId}` :
+                        'Произошла ошибка при отправке заказа'}
+                </h2>
+                <button className="modal-cart__button" onClick={closeModal}>Закрыть</button>
+            </Modal>
         </section>
     )
 };

@@ -33,7 +33,7 @@ export const CartItem = ({ data }) => {
                 <div className="cart-item__quantity">
                     <button className="cart-item__quantity-button cart-item__quantity-button_minus"
                             onClick={handleDecrease}></button>
-                    <input className="cart-item__quantity-input" type="number" defaultValue={data.quantity} />
+                    <input className="cart-item__quantity-input" type="number" value={data.quantity} readOnly />
                     <button className="cart-item__quantity-button cart-item__quantity-button_plus"
                             onClick={handleIncrease}></button>
                 </div>
