@@ -14,10 +14,12 @@ export const Products = () => {
         setCategory(category);
     }, [category, setCategory]);
 
+    const categoryTitle = categories[category] || 'Товары';
+
     return (
         <section className="products">
             <div className="container">
-                <h2 className="products__title">{categories[category]}</h2>
+                <h2 className="products__title">{categoryTitle}</h2>
 
                 <ul className="products__list">
                     {products.length ? products.map((item) => (
